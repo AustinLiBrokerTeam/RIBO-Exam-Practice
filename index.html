@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RIBO Practice Portal</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Segoe UI, Arial, sans-serif;
+    background:#f4f6f8;
+    color:#333;
+}
+
+header{
+    background:#005A9C;
+    color:white;
+    padding:25px;
+    text-align:center;
+}
+
+header h1{
+    margin-bottom:10px;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.card h3{
+    margin-bottom:10px;
+}
+
+.chapter-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:20px;
+}
+
+.chapter-card{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    background:white;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 3px 15px rgba(0,0,0,.08);
+}
+
+.chapter-card.is-complete{
+    outline:2px solid #107C10;
+    outline-offset:-2px;
+}
+
+.chapter-thumbnail-wrap{
+    position:relative;
+    aspect-ratio:16 / 9;
+    background:#18252b;
+}
+
+.chapter-thumbnail{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.thumbnail-message{
+    position:absolute;
+    inset:0;
+    display:grid;
+    place-items:center;
+    padding:12px;
+    color:white;
+    text-align:center;
+    background:#18252b;
+    pointer-events:none;
+}
+
+.chapter-thumbnail-wrap.is-ready .thumbnail-message{
+    display:none;
+}
+
+.chapter-header{
+    display:flex;
+    align-items:center;
+    height:78px;
+    flex:0 0 78px;
+    background:#0078D4;
+    color:white;
+    padding:15px;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.chapter-header span{
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    line-clamp:2;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+}
+
+.chapter-body{
+    flex:1;
+    padding:20px;
+}
+
+.completion-status{
+    min-height:20px;
+    margin-top:8px;
+    color:#107C10;
+    font-weight:600;
+}
+
+.completed-section{
+    margin-top:28px;
+    padding-top:20px;
+    border-top:1px solid #d5dadd;
+}
+
+.completed-section h2{
+    margin-bottom:12px;
+}
+
+.completed-chapter-list{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:8px 24px;
+    padding-left:24px;
+}
+
+.completed-chapter-list li{
+    padding:6px 0;
+    border-bottom:1px solid #e3e7e9;
+}
+
+.button{
+    display:inline-block;
+    background:#0078D4;
+    color:white;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+    padding:10px 16px;
+    border-radius:6px;
+    margin-top:10px;
+}
+
+.button:hover{
+    background:#106ebe;
+}
+
+.button.green{
+    background:#107C10;
+}
+
+.button.green:hover{
+    background:#0b6a0b;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    z-index:1000;
+}
+
+.modal-content{
+    background:white;
+    width:90%;
+    max-width:1000px;
+    margin:40px auto;
+    border-radius:12px;
+    overflow:hidden;
+    max-height:90vh;
+    overflow-y:auto;
+}
+
+.modal-header{
+    background:#0078D4;
+    color:white;
+    padding:20px;
+}
+
+.modal-body{
+    padding:20px;
+}
+
+.video-container{
+    margin-bottom:20px;
+}
+
+.video-container video{
+    width:100%;
+    max-height:500px;
+    background:black;
+    border-radius:10px;
+}
+
+.question{
+    background:#f9f9f9;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:8px;
+}
+
+.question.is-correct{
+    border-left:4px solid #107C10;
+}
+
+.question.is-incorrect,
+.question.is-unanswered{
+    border-left:4px solid #b42318;
+}
+
+.question.is-ungraded{
+    border-left:4px solid #8a6d00;
+}
+
+.option{
+    margin:8px 0;
+}
+
+.option label.is-correct-option{
+    color:#0b6a0b;
+    font-weight:600;
+}
+
+.option label.is-incorrect-option{
+    color:#b42318;
+    font-weight:600;
+}
+
+.quiz-feedback{
+    margin-top:12px;
+    font-weight:600;
+    white-space:pre-line;
+}
+
+.close{
+    float:right;
+    cursor:pointer;
+    font-size:24px;
+}
+
+.progress{
+    height:20px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#107C10;
+}
+
+footer{
+    text-align:center;
+    padding:30px;
+    color:#666;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>RIBO Practice Portal</h1>
+    <p>Video Training + Practice Quizzes</p>
+</header>
+
+<div class="container">
+
+    <div class="stats">
+        <div class="card">
+            <h3>Total Chapters</h3>
+            <h2 id="totalChapters">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Completed</h3>
+            <h2 id="completedCount">0</h2>
+        </div>
+
+        <div class="card">
+            <h3>Progress</h3>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <h2 style="margin-bottom:15px;">Course Chapters</h2>
+
+    <div class="chapter-grid" id="chapterGrid"></div>
+
+    <section class="completed-section" aria-labelledby="completedHeading">
+        <h2 id="completedHeading">Completed Chapters</h2>
+        <p id="completedEmpty">No completed chapters yet.</p>
+        <ol class="completed-chapter-list" id="completedChapterList"></ol>
+    </section>
+
+    <h2 style="margin:25px 0 15px;">Practice Exams</h2>
+
+    <div class="chapter-grid" id="practiceGrid"></div>
+
+</div>
+
+<footer>
+    RIBO Practice Portal
+</footer>
+
+<div class="modal" id="chapterModal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+        </div>
+
+        <div class="modal-body">
+
+            <div class="video-container" id="videoArea"></div>
+
+            <h3>Practice Quiz</h3>
+
+            <div id="quizArea"></div>
+
+            <button class="button green" onclick="submitQuiz()">
+                Submit Quiz
+            </button>
+
+            <div id="resultArea" style="margin-top:20px;"></div>
+
+        </div>
+
+    </div>
+</div>
+
+<script src="./questions.js?v=practice-exam-90"></script>
+<script>
+const chapters = window.chapters || [];
+const practices = window.practices || [];
+
+let currentChapter = null;
+let currentPractice = null;
+let currentQuestions = [];
+let currentQuizKey = "";
+const questionOrderCache = new Map();
+const optionOrderCache = new Map();
+
+function renderChapters(){
+
+    const grid = document.getElementById("chapterGrid");
+    document.getElementById("totalChapters").innerText = chapters.length;
+
+    grid.innerHTML = chapters.map(chapter => `
+        <div class="chapter-card" data-chapter-id="${chapter.id}">
+
+            <div class="chapter-header">
+                <span>${chapter.title}</span>
+            </div>
+
+            <div class="chapter-thumbnail-wrap" id="thumbnail-${chapter.id}">
+                <video
+                    class="chapter-thumbnail"
+                    src="${chapter.video}"
+                    muted
+                    playsinline
+                    preload="metadata"
+                    aria-label="First frame of ${chapter.title} video">
+                </video>
+                <div class="thumbnail-message">Loading video preview...</div>
+            </div>
+
+            <div class="chapter-body">
+
+                <p>
+                    ${chapter.questions.length} practice questions
+                </p>
+
+                <p class="completion-status" aria-live="polite"></p>
+
+                <button
+                    class="button"
+                    onclick="openChapter(${chapter.id})">
+                    Open Chapter
+                </button>
+
+            </div>
+
+        </div>
+    `).join("");
+
+    grid.querySelectorAll(".chapter-thumbnail").forEach(video=>{
+        const thumbnail = video.closest(".chapter-thumbnail-wrap");
+        const showThumbnail = () => {
+            video.pause();
+            thumbnail.classList.add("is-ready");
+        };
+        const showError = () => {
+            thumbnail.querySelector(".thumbnail-message").textContent = "Video preview unavailable";
+        };
+
+        video.addEventListener("loadeddata", showThumbnail, { once: true });
+        video.addEventListener("error", showError, { once: true });
+
+        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+            showThumbnail();
+        } else if (video.error) {
+            showError();
+        }
+    });
+}
+
+function renderPractices(){
+
+    const grid = document.getElementById("practiceGrid");
+    grid.innerHTML = practices.map(practice => `
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <span>${practice.title}</span>
+            </div>
+            <div class="chapter-body">
+                <p>${practice.questions.length} practice questions</p>
+                <button class="button" onclick="openPractice(${practice.id})">
+                    Start Practice
+                </button>
+            </div>
+        </div>
+    `).join("");
+}
+
+function openChapter(id){
+
+    currentChapter = chapters.find(c => c.id === id);
+    currentPractice = null;
+
+    if (!currentChapter) return;
+
+    document.getElementById("modalTitle")
+        .innerText = currentChapter.title;
+
+    const videoArea = document.getElementById("videoArea");
+    videoArea.replaceChildren();
+    videoArea.style.display = "";
+
+    if (currentChapter.video) {
+        const video = document.createElement("video");
+        video.controls = true;
+        video.preload = "metadata";
+        video.src = currentChapter.video;
+        video.addEventListener("error", () => {
+            if (window.location.protocol === "file:") {
+                videoArea.innerHTML = "Videos need the portal to run through a local web server. Double-click <strong>start.bat</strong> in the project folder, then open <a href=\"http://localhost:8000\">http://localhost:8000</a>.";
+            } else {
+                videoArea.textContent = `Unable to load video: ${currentChapter.video}`;
+            }
+        });
+        videoArea.appendChild(video);
+    } else {
+        videoArea.textContent = "No video is available for this chapter.";
+    }
+
+    renderQuiz(currentChapter);
+
+}
+
+function openPractice(id){
+
+    currentPractice = practices.find(practice => practice.id === id);
+    currentChapter = null;
+
+    if (!currentPractice) return;
+
+    document.getElementById("modalTitle").innerText = currentPractice.title;
+    const videoArea = document.getElementById("videoArea");
+    videoArea.replaceChildren();
+    videoArea.style.display = "none";
+
+    renderQuiz(currentPractice);
+}
+
+function renderQuiz(quiz){
+
+    currentQuizKey = `${currentPractice ? "practice" : "chapter"}-${quiz.id}`;
+    const savedAnswers = getSavedAnswers(currentQuizKey);
+    currentQuestions = shuffleItems(
+        quiz.questions,
+        `${currentQuizKey}-questions`,
+        questionOrderCache,
+        question => question.id
+    ).map(question => {
+        const options = shuffleItems(
+            question.options.map((text, index) => ({ text, index })),
+            `${currentQuizKey}-question-${question.id}-options`,
+            optionOrderCache,
+            option => option.index
+        );
+
+        return {
+            ...question,
+            options: options.map(option => option.text),
+            optionSourceIndexes: options.map(option => option.index),
+            answer: Number.isInteger(question.answer)
+                ? options.findIndex(option => option.index === question.answer)
+                : question.answer
+        };
+    });
+
+    let quizHtml = "";
+
+    if (currentQuestions.length === 0) {
+        quizHtml = `
+        <div class="question">
+            No questions entered yet.
+        </div>`;
+    }
+
+    currentQuestions.forEach((question, index) => {
+        quizHtml += `
+        <div class="question" data-question-index="${index}">
+            <h4>${index + 1}. ${question.question}</h4>
+            ${question.options.map((option, optionIndex) => `
+            <div class="option">
+                <label>
+                    <input type="radio" name="q${index}" value="${optionIndex}" ${question.optionSourceIndexes[optionIndex] === savedAnswers[question.id] ? "checked" : ""}>
+                    ${option}
+                </label>
+            </div>
+            `).join("")}
+            <div class="quiz-feedback" aria-live="polite"></div>
+        </div>
+        `;
+    });
+
+    document.getElementById("quizArea").innerHTML = quizHtml;
+    document.getElementById("resultArea").innerHTML = "";
+    document.getElementById("chapterModal").style.display = "block";
+
+}
+
+function shuffleItems(items, cacheKey, orderCache, getKey){
+
+    const cachedOrder = orderCache.get(cacheKey);
+    if (cachedOrder) {
+        const itemsByKey = new Map(items.map(item => [getKey(item), item]));
+        if (cachedOrder.length === items.length && cachedOrder.every(key => itemsByKey.has(key))) {
+            return cachedOrder.map(key => itemsByKey.get(key));
+        }
+    }
+
+    const shuffled = [...items];
+
+    for (let index = shuffled.length - 1; index > 0; index--){
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+    }
+
+    orderCache.set(cacheKey, shuffled.map(getKey));
+    return shuffled;
+}
+
+function closeModal(){
+    document.getElementById("chapterModal").style.display = "none";
+}
+
+document.getElementById("quizArea").addEventListener("change", event => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
+
+    const questionIndex = Number(input.name.slice(1));
+    const question = currentQuestions[questionIndex];
+    if (!question) return;
+
+    saveQuizAnswer(
+        currentQuizKey,
+        question.id,
+        question.optionSourceIndexes[Number(input.value)]
+    );
+});
+
+function getSavedAnswers(quizKey){
+    try {
+        const savedAnswers = JSON.parse(localStorage.getItem("quizAnswers") || "{}");
+        return savedAnswers[quizKey] || {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function saveQuizAnswer(quizKey, questionId, optionIndex){
+    try {
+        const savedAnswers = JSON.parse(localStorage.getItem("quizAnswers") || "{}");
+        const quizAnswers = savedAnswers[quizKey] || {};
+        quizAnswers[questionId] = optionIndex;
+        savedAnswers[quizKey] = quizAnswers;
+        localStorage.setItem("quizAnswers", JSON.stringify(savedAnswers));
+    } catch (error) {
+        // Keep the quiz usable if browser storage is unavailable.
+    }
+}
+
+document.getElementById("chapterModal").addEventListener("click", event => {
+    if (event.target === event.currentTarget) closeModal();
+});
+
+function submitQuiz(){
+
+    const activeQuiz = currentPractice || currentChapter;
+    if (!activeQuiz) return;
+
+    let score = 0;
+    let gradedCount = 0;
+    let incorrectCount = 0;
+    let unansweredCount = 0;
+    let ungradedCount = 0;
+
+    currentQuestions.forEach((question, index) => {
+        const card = document.querySelector(
+            `.question[data-question-index='${index}']`
+        );
+        const feedback = card.querySelector(".quiz-feedback");
+        const selected = card.querySelector("input:checked");
+        const hasAnswerKey = Number.isInteger(question.answer)
+            && question.answer >= 0
+            && question.answer < question.options.length;
+
+        if (!hasAnswerKey) {
+            card.classList.add("is-ungraded");
+            feedback.textContent = "Not graded: no valid answer key is set for this question.";
+            ungradedCount++;
+            return;
+        }
+
+        gradedCount++;
+        const correctLabel = card.querySelector(`input[value='${question.answer}']`).parentElement;
+        correctLabel.classList.add("is-correct-option");
+
+        if (selected && Number(selected.value) === question.answer) {
+            card.classList.add("is-correct");
+            feedback.textContent = "Correct.";
+            score++;
+            return;
+        }
+
+        if (selected) {
+            card.classList.add("is-incorrect");
+            selected.parentElement.classList.add("is-incorrect-option");
+            feedback.textContent = `Incorrect. Correct answer: ${question.options[question.answer]}`;
+            incorrectCount++;
+        } else {
+            card.classList.add("is-unanswered");
+            feedback.textContent = `Not answered. Correct answer: ${question.options[question.answer]}`;
+            unansweredCount++;
+        }
+
+        if (question.explanation) {
+            feedback.textContent += `\n${question.explanation}`;
+        }
+    });
+
+    document.getElementById("resultArea").innerHTML = `
+        <h3>Score: ${score} / ${gradedCount}</h3>
+        <p>${incorrectCount} incorrect, ${unansweredCount} unanswered, ${ungradedCount} not graded.</p>
+    `;
+
+    if (currentChapter && gradedCount === currentQuestions.length) {
+        markComplete(currentChapter.id);
+    }
+
+}
+
+function markComplete(id){
+
+    const completed = getCompleted();
+
+    if(!completed.includes(id))
+        completed.push(id);
+
+    try {
+        localStorage.setItem("completed", JSON.stringify(completed));
+    } catch (error) {
+        // Progress still updates for this page session when storage is unavailable.
+    }
+
+    updateProgress();
+}
+
+function getCompleted(){
+    try {
+        const completed = JSON.parse(localStorage.getItem("completed") || "[]");
+        return Array.isArray(completed) ? completed : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function updateProgress(){
+
+    const completed = getCompleted();
+    const completedIds = new Set(
+        completed.filter(id => chapters.some(chapter => chapter.id === id))
+    );
+
+    document.getElementById("completedCount")
+        .innerText = completedIds.size;
+
+    const completedChapters = chapters.filter(chapter => completedIds.has(chapter.id));
+    document.getElementById("completedChapterList").innerHTML = completedChapters
+        .map(chapter => `<li>${chapter.title}</li>`)
+        .join("");
+    document.getElementById("completedEmpty").hidden = completedChapters.length > 0;
+
+    document.querySelectorAll(".chapter-card[data-chapter-id]").forEach(card => {
+        const isComplete = completedIds.has(Number(card.dataset.chapterId));
+        card.classList.toggle("is-complete", isComplete);
+        card.querySelector(".completion-status").textContent = isComplete ? "Completed" : "";
+    });
+
+    const percent =
+        chapters.length ? (completedIds.size / chapters.length) * 100 : 0;
+
+    document.getElementById("progressBar")
+        .style.width = percent + "%";
+}
+
+window.openChapter = openChapter;
+window.openPractice = openPractice;
+window.closeModal = closeModal;
+window.submitQuiz = submitQuiz;
+
+renderChapters();
+renderPractices();
+updateProgress();
+</script>
+
+</body>
+</html>
