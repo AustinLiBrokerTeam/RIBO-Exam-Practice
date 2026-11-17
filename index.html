@@ -5,11 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RIBO Practice Portal</title>
 
+<script>
+const PORTAL_ACCESS_KEY = "IsdyxGxDs2yQDqsz8vr8eJnHwMYhdDff";
+if (new URLSearchParams(location.search).get("key") === PORTAL_ACCESS_KEY) {
+    document.documentElement.classList.add("access-granted");
+}
+</script>
+
 <style>
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
+}
+
+html:not(.access-granted) body > :not(#accessGate){
+    display:none !important;
+}
+
+#accessGate{
+    display:none;
+}
+
+html:not(.access-granted) #accessGate{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:grid;
+    place-items:center;
+    padding:24px;
+    background:#f4f6f8;
+}
+
+#accessGate .card{
+    width:min(100%, 420px);
+}
+
+#accessError{
+    margin-top:10px;
 }
 
 body{
@@ -432,6 +465,13 @@ footer{
 </head>
 <body>
 
+<main id="accessGate" aria-labelledby="accessGateTitle">
+    <section class="card">
+        <h2 id="accessGateTitle">Access required</h2>
+        <p id="accessError" role="status" aria-live="polite"></p>
+    </section>
+</main>
+
 <header>
     <h1>RIBO Practice Portal</h1>
     <p>Video Training + Practice Quizzes</p>
@@ -521,6 +561,12 @@ footer{
 
 <script src="./questions.js?v=practice-exam-90"></script>
 <script>
+const accessError = document.getElementById("accessError");
+if (!document.documentElement.classList.contains("access-granted")) {
+    accessError.textContent =
+        "This link is missing a valid access key. If the link has been reset, request an updated link.";
+}
+
 const chapters = window.chapters || [];
 const practices = window.practices || [];
 
@@ -818,7 +864,7 @@ function openChapter(id){
                 class="subtitle-search"
                 id="subtitleSearch"
                 type="search"
-                placeholder="Try a topic or phrase, such as claims or liability">
+    
             <div class="subtitle-search-results" aria-live="polite">
                 Loading subtitle topics...
             </div>
