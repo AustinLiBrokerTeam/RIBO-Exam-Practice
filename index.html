@@ -584,14 +584,16 @@ function renderVideoNavigation(video, textTrack, navigation){
         return;
     }
 
-    subtitleTopicSuggestions.forEach(topic => {
+    const topicCues = subtitleTopicSuggestions.map((topic, index) => {
         const cue = cues.find(item => {
             const text = item.text.toLowerCase();
             return item.startTime >= 60 && topic.terms.some(term => text.includes(term));
         });
 
-        if (!cue) return;
+        return cue ? { topic, cue, index } : null;
+    }).filter(Boolean).sort((a, b) => a.cue.startTime - b.cue.startTime || a.index - b.index);
 
+    topicCues.forEach(({ topic, cue }) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "button topic-jump";
