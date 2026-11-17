@@ -181,36 +181,92 @@ header h1{
     background:#0b6a0b;
 }
 
-.modal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.6);
-    z-index:1000;
-}
-
-.modal-content{
+.chapter-viewer{
+    margin:30px 0;
     background:white;
-    width:90%;
-    max-width:1000px;
-    margin:40px auto;
     border-radius:12px;
-    overflow:hidden;
-    max-height:90vh;
-    overflow-y:auto;
+    box-shadow:0 3px 15px rgba(0,0,0,.08);
+    scroll-margin-top:20px;
 }
 
-.modal-header{
+.chapter-viewer[hidden]{
+    display:none;
+}
+
+.viewer-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
     background:#0078D4;
     color:white;
+    padding:16px 20px;
+    border-radius:12px 12px 0 0;
+}
+
+.viewer-header h2{
+    margin:0;
+}
+
+.viewer-actions{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+}
+
+.viewer-actions .button{
+    margin:0;
+}
+
+#previousChapterButton[hidden],
+#nextChapterButton[hidden]{
+    display:none;
+}
+
+.viewer-navigation-button{
+    background:#005A9C;
+}
+
+.viewer-navigation-button:hover{
+    background:#004578;
+}
+
+.viewer-navigation-button:disabled{
+    cursor:not-allowed;
+    opacity:.55;
+}
+
+.viewer-close{
+    flex-shrink:0;
+    background:white;
+    color:#005A9C;
+    font-weight:600;
+}
+
+.viewer-close:hover{
+    background:#e8f4fc;
+}
+
+.viewer-body{
     padding:20px;
 }
 
-.modal-body{
-    padding:20px;
+@media (max-width:640px){
+    .viewer-header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .viewer-actions{
+        width:100%;
+        justify-content:flex-start;
+    }
 }
 
 .video-container{
+    position:relative;
     margin-bottom:20px;
 }
 
@@ -219,6 +275,99 @@ header h1{
     max-height:500px;
     background:black;
     border-radius:10px;
+}
+
+.video-loading{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    min-height:220px;
+    padding:20px;
+    border-radius:10px;
+    background:#18252b;
+    color:white;
+}
+
+.loading-spinner{
+    width:22px;
+    height:22px;
+    flex:0 0 22px;
+    border:3px solid rgba(255,255,255,.35);
+    border-top-color:white;
+    border-radius:50%;
+    animation:loading-spin .8s linear infinite;
+}
+
+@keyframes loading-spin{
+    to{transform:rotate(360deg);}
+}
+
+@media (prefers-reduced-motion: reduce){
+    .loading-spinner{
+        animation:none;
+    }
+}
+
+.video-navigation{
+    margin-top:12px;
+    padding:16px;
+    border:1px solid #d5dadd;
+    border-radius:10px;
+    background:#f7f9fb;
+}
+
+.video-navigation h3{
+    margin-bottom:8px;
+}
+
+.video-navigation p{
+    color:#55616b;
+}
+
+.subtitle-search{
+    width:100%;
+    margin-top:10px;
+    padding:10px 12px;
+    border:1px solid #aeb8bf;
+    border-radius:6px;
+    font:inherit;
+}
+
+.topic-jumps{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+}
+
+.topic-jump{
+    margin-top:0;
+    padding:8px 12px;
+}
+
+.subtitle-search-results{
+    display:grid;
+    gap:6px;
+    max-height:220px;
+    margin-top:12px;
+    overflow-y:auto;
+}
+
+.subtitle-result{
+    width:100%;
+    padding:8px 10px;
+    border:1px solid #d5dadd;
+    border-radius:6px;
+    background:white;
+    color:inherit;
+    cursor:pointer;
+    font:inherit;
+    text-align:left;
+}
+
+.subtitle-result:hover{
+    background:#edf5fb;
 }
 
 .question{
@@ -259,12 +408,6 @@ header h1{
     margin-top:12px;
     font-weight:600;
     white-space:pre-line;
-}
-
-.close{
-    float:right;
-    cursor:pointer;
-    font-size:24px;
 }
 
 .progress{
@@ -315,36 +458,37 @@ footer{
         </div>
     </div>
 
-    <h2 style="margin-bottom:15px;">Course Chapters</h2>
+    <h2 id="chapterGridHeading" tabindex="-1" style="margin-bottom:15px;">Course Chapters</h2>
 
     <div class="chapter-grid" id="chapterGrid"></div>
 
-    <section class="completed-section" aria-labelledby="completedHeading">
-        <h2 id="completedHeading">Completed Chapters</h2>
-        <p id="completedEmpty">No completed chapters yet.</p>
-        <ol class="completed-chapter-list" id="completedChapterList"></ol>
-    </section>
-
-    <h2 style="margin:25px 0 15px;">Practice Exams</h2>
-
-    <div class="chapter-grid" id="practiceGrid"></div>
-
-</div>
-
-<footer>
-    RIBO Practice Portal
-</footer>
-
-<div class="modal" id="chapterModal">
-    <div class="modal-content">
-
-        <div class="modal-header">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle"></h2>
+    <section class="chapter-viewer" id="chapterViewer" aria-labelledby="chapterViewerTitle" hidden>
+        <div class="viewer-header">
+            <h2 id="chapterViewerTitle" tabindex="-1"></h2>
+            <div class="viewer-actions">
+                <button
+                    class="button viewer-navigation-button"
+                    id="previousChapterButton"
+                    type="button"
+                    onclick="navigateChapter(-1)"
+                    hidden>
+                    Previous chapter
+                </button>
+                <button
+                    class="button viewer-navigation-button"
+                    id="nextChapterButton"
+                    type="button"
+                    onclick="navigateChapter(1)"
+                    hidden>
+                    Next chapter
+                </button>
+                <button class="button viewer-close" type="button" onclick="closeChapterViewer()">
+                    Close viewer
+                </button>
+            </div>
         </div>
 
-        <div class="modal-body">
-
+        <div class="viewer-body">
             <div class="video-container" id="videoArea"></div>
 
             <h3>Practice Quiz</h3>
@@ -356,11 +500,24 @@ footer{
             </button>
 
             <div id="resultArea" style="margin-top:20px;"></div>
-
         </div>
+    </section>
 
-    </div>
+    <section class="completed-section" aria-labelledby="completedHeading">
+        <h2 id="completedHeading">Completed Chapters</h2>
+        <p id="completedEmpty">No completed chapters yet.</p>
+        <ol class="completed-chapter-list" id="completedChapterList"></ol>
+    </section>
+
+    <h2 id="practiceGridHeading" tabindex="-1" style="margin:25px 0 15px;">Practice Exams</h2>
+
+    <div class="chapter-grid" id="practiceGrid"></div>
+
 </div>
+
+<footer>
+    RIBO Practice Portal
+</footer>
 
 <script src="./questions.js?v=practice-exam-90"></script>
 <script>
@@ -371,8 +528,137 @@ let currentChapter = null;
 let currentPractice = null;
 let currentQuestions = [];
 let currentQuizKey = "";
+let activeVideoLoadId = 0;
+let activeVideoChapterId = null;
 const questionOrderCache = new Map();
 const optionOrderCache = new Map();
+
+const subtitleTopicSuggestions = [
+    { label: "RIBO & regulation", terms: ["ribo", "regulat", "government", "licens", "fsra"] },
+    { label: "Risk", terms: ["risk", "peril", "hazard"] },
+    { label: "Policies & contracts", terms: ["policy", "contract"] },
+    { label: "Broker responsibilities", terms: ["broker"] },
+    { label: "Claims & payouts", terms: ["claim", "indemnif", "settlement"] },
+    { label: "Property coverage", terms: ["property", "homeowner", "contents"] },
+    { label: "Liability coverage", terms: ["liability", "negligence", "third-party"] },
+    { label: "Auto insurance", terms: ["automobile", "auto insurance", "accident benefits", "vehicle"] },
+    { label: "Commercial coverage", terms: ["commercial", "business interruption"] },
+    { label: "Travel medical", terms: ["travel health", "travel medical", "emergency medical"] }
+];
+
+function formatVideoTime(seconds){
+    const totalSeconds = Math.floor(seconds);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+    }
+
+    return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+function seekVideoToCue(video, cue){
+    video.currentTime = cue.startTime;
+}
+
+function showChapterViewer(){
+    const viewer = document.getElementById("chapterViewer");
+    viewer.hidden = false;
+    viewer.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start"
+    });
+    document.getElementById("chapterViewerTitle").focus({ preventScroll: true });
+}
+
+function renderVideoNavigation(video, textTrack, navigation){
+    const cues = Array.from(textTrack.cues || []);
+    const topicJumps = navigation.querySelector(".topic-jumps");
+    const searchInput = navigation.querySelector(".subtitle-search");
+    const searchResults = navigation.querySelector(".subtitle-search-results");
+
+    if (cues.length === 0) {
+        searchResults.textContent = "No subtitle cues are available for this video.";
+        return;
+    }
+
+    subtitleTopicSuggestions.forEach(topic => {
+        const cue = cues.find(item => {
+            const text = item.text.toLowerCase();
+            return item.startTime >= 60 && topic.terms.some(term => text.includes(term));
+        });
+
+        if (!cue) return;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "button topic-jump";
+        button.textContent = `${topic.label} - ${formatVideoTime(cue.startTime)}`;
+        button.setAttribute("aria-label", `Skip to ${topic.label} at ${formatVideoTime(cue.startTime)}`);
+        button.addEventListener("click", () => seekVideoToCue(video, cue));
+        topicJumps.appendChild(button);
+    });
+
+    function renderSearchResults(){
+        const query = searchInput.value.trim().toLowerCase();
+        searchResults.replaceChildren();
+
+        if (!query) {
+            searchResults.textContent = "Search the transcript to find a specific topic or phrase.";
+            return;
+        }
+
+        const matches = cues.filter(cue => cue.text.toLowerCase().includes(query));
+        if (matches.length === 0) {
+            searchResults.textContent = "No matching subtitle lines found.";
+            return;
+        }
+
+        const status = document.createElement("p");
+        const visibleMatches = matches.slice(0, 20);
+        status.textContent = matches.length > visibleMatches.length
+            ? `Showing the first ${visibleMatches.length} of ${matches.length} matches.`
+            : `${matches.length} ${matches.length === 1 ? "match" : "matches"}.`;
+        searchResults.appendChild(status);
+
+        visibleMatches.forEach(cue => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "subtitle-result";
+            button.textContent = `${formatVideoTime(cue.startTime)} - ${cue.text}`;
+            button.addEventListener("click", () => seekVideoToCue(video, cue));
+            searchResults.appendChild(button);
+        });
+    }
+
+    searchInput.addEventListener("input", renderSearchResults);
+    renderSearchResults();
+}
+
+function attachSubtitleTrack(video, videoUrl, onTrackLoad, onTrackError){
+    if (!video || !videoUrl) return;
+
+    const subtitleUrl = videoUrl.replace(/\.mp4$/i, ".vtt");
+    const track = document.createElement("track");
+    track.kind = "captions";
+    track.label = "English";
+    track.srclang = "en";
+    track.src = subtitleUrl;
+    track.default = true;
+    if (onTrackLoad) {
+        track.addEventListener("load", () => onTrackLoad(track.track), { once: true });
+    }
+    if (onTrackError) {
+        track.addEventListener("error", onTrackError, { once: true });
+    }
+    video.appendChild(track);
+
+    if (video.textTracks && video.textTracks.length > 0) {
+        video.textTracks[0].mode = "showing";
+    }
+}
 
 function renderChapters(){
 
@@ -418,6 +704,11 @@ function renderChapters(){
     `).join("");
 
     grid.querySelectorAll(".chapter-thumbnail").forEach(video=>{
+        const chapter = chapters.find(item => item.video === video.getAttribute("src"));
+        if (chapter) {
+            attachSubtitleTrack(video, chapter.video);
+        }
+
         const thumbnail = video.closest(".chapter-thumbnail-wrap");
         const showThumbnail = () => {
             video.pause();
@@ -456,38 +747,119 @@ function renderPractices(){
     `).join("");
 }
 
-function openChapter(id){
+function updateChapterNavigation(){
+    const isChapter = Boolean(currentChapter) && !currentPractice;
+    const chapterIndex = isChapter
+        ? chapters.findIndex(chapter => chapter.id === currentChapter.id)
+        : -1;
+    const previousButton = document.getElementById("previousChapterButton");
+    const nextButton = document.getElementById("nextChapterButton");
 
-    currentChapter = chapters.find(c => c.id === id);
-    currentPractice = null;
+    previousButton.hidden = !isChapter;
+    previousButton.disabled = chapterIndex <= 0;
+    nextButton.hidden = !isChapter;
+    nextButton.disabled = chapterIndex < 0 || chapterIndex >= chapters.length - 1;
+}
 
+function navigateChapter(offset){
     if (!currentChapter) return;
 
-    document.getElementById("modalTitle")
-        .innerText = currentChapter.title;
+    const chapterIndex = chapters.findIndex(chapter => chapter.id === currentChapter.id);
+    const chapter = chapters[chapterIndex + offset];
+    if (chapter) openChapter(chapter.id);
+}
+
+function openChapter(id){
+
+    const chapter = chapters.find(c => c.id === id);
+    if (!chapter) return;
 
     const videoArea = document.getElementById("videoArea");
+    const chapterViewerTitle = document.getElementById("chapterViewerTitle");
+    currentPractice = null;
+    currentChapter = chapter;
+
+    chapterViewerTitle.innerText = chapter.title;
+    updateChapterNavigation();
+
+    if (
+        activeVideoChapterId === chapter.id
+        && videoArea.querySelector("video")
+    ) {
+        videoArea.style.display = "";
+        renderQuiz(chapter);
+        return;
+    }
+
+    const previousVideo = videoArea.querySelector("video");
+    if (previousVideo) previousVideo.pause();
     videoArea.replaceChildren();
     videoArea.style.display = "";
+    const videoLoadId = ++activeVideoLoadId;
+    activeVideoChapterId = chapter.video ? chapter.id : null;
 
-    if (currentChapter.video) {
+    if (chapter.video) {
         const video = document.createElement("video");
         video.controls = true;
         video.preload = "metadata";
-        video.src = currentChapter.video;
+        video.hidden = true;
+
+        const navigation = document.createElement("section");
+        navigation.className = "video-navigation";
+        navigation.setAttribute("aria-label", "Subtitle topic navigation");
+        navigation.innerHTML = `
+            <h3>Jump to a topic</h3>
+            <p>Choose a suggested topic or search this video's subtitles.</p>
+            <div class="topic-jumps" aria-label="Suggested topic jumps"></div>
+            <label for="subtitleSearch">Search subtitles</label>
+            <input
+                class="subtitle-search"
+                id="subtitleSearch"
+                type="search"
+                placeholder="Try a topic or phrase, such as claims or liability">
+            <div class="subtitle-search-results" aria-live="polite">
+                Loading subtitle topics...
+            </div>
+        `;
+        const loading = document.createElement("div");
+        loading.className = "video-loading";
+        loading.setAttribute("role", "status");
+        const spinner = document.createElement("span");
+        spinner.className = "loading-spinner";
+        spinner.setAttribute("aria-hidden", "true");
+        const loadingMessage = document.createElement("span");
+        loadingMessage.textContent = `Loading ${chapter.title} video...`;
+        loading.append(spinner, loadingMessage);
+
+        videoArea.append(loading, video);
+        video.addEventListener("loadeddata", () => {
+            if (videoLoadId !== activeVideoLoadId || !currentChapter || currentChapter.id !== chapter.id) return;
+            video.hidden = false;
+            videoArea.replaceChildren(video, navigation);
+        }, { once: true });
         video.addEventListener("error", () => {
+            if (videoLoadId !== activeVideoLoadId || !currentChapter || currentChapter.id !== chapter.id) return;
             if (window.location.protocol === "file:") {
                 videoArea.innerHTML = "Videos need the portal to run through a local web server. Double-click <strong>start.bat</strong> in the project folder, then open <a href=\"http://localhost:8000\">http://localhost:8000</a>.";
             } else {
-                videoArea.textContent = `Unable to load video: ${currentChapter.video}`;
+                videoArea.textContent = `Unable to load video: ${chapter.video}`;
             }
         });
-        videoArea.appendChild(video);
+        attachSubtitleTrack(
+            video,
+            chapter.video,
+            textTrack => renderVideoNavigation(video, textTrack, navigation),
+            () => {
+                navigation.querySelector(".subtitle-search-results").textContent =
+                    "Unable to load subtitles for this video.";
+            }
+        );
+        video.src = chapter.video;
     } else {
         videoArea.textContent = "No video is available for this chapter.";
     }
 
-    renderQuiz(currentChapter);
+    renderQuiz(chapter);
 
 }
 
@@ -498,8 +870,13 @@ function openPractice(id){
 
     if (!currentPractice) return;
 
-    document.getElementById("modalTitle").innerText = currentPractice.title;
+    updateChapterNavigation();
+    activeVideoLoadId++;
+    activeVideoChapterId = null;
+    document.getElementById("chapterViewerTitle").innerText = currentPractice.title;
     const videoArea = document.getElementById("videoArea");
+    const previousVideo = videoArea.querySelector("video");
+    if (previousVideo) previousVideo.pause();
     videoArea.replaceChildren();
     videoArea.style.display = "none";
 
@@ -561,7 +938,7 @@ function renderQuiz(quiz){
 
     document.getElementById("quizArea").innerHTML = quizHtml;
     document.getElementById("resultArea").innerHTML = "";
-    document.getElementById("chapterModal").style.display = "block";
+    showChapterViewer();
 
 }
 
@@ -586,8 +963,18 @@ function shuffleItems(items, cacheKey, orderCache, getKey){
     return shuffled;
 }
 
-function closeModal(){
-    document.getElementById("chapterModal").style.display = "none";
+function closeChapterViewer(){
+    const video = document.querySelector("#videoArea video");
+    if (video) video.pause();
+    document.getElementById("chapterViewer").hidden = true;
+    const returnHeading = document.getElementById(
+        currentPractice ? "practiceGridHeading" : "chapterGridHeading"
+    );
+    returnHeading.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start"
+    });
+    returnHeading.focus({ preventScroll: true });
 }
 
 document.getElementById("quizArea").addEventListener("change", event => {
@@ -625,10 +1012,6 @@ function saveQuizAnswer(quizKey, questionId, optionIndex){
         // Keep the quiz usable if browser storage is unavailable.
     }
 }
-
-document.getElementById("chapterModal").addEventListener("click", event => {
-    if (event.target === event.currentTarget) closeModal();
-});
 
 function submitQuiz(){
 
@@ -752,7 +1135,7 @@ function updateProgress(){
 
 window.openChapter = openChapter;
 window.openPractice = openPractice;
-window.closeModal = closeModal;
+window.closeChapterViewer = closeChapterViewer;
 window.submitQuiz = submitQuiz;
 
 renderChapters();
