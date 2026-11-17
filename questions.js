@@ -1595,7 +1595,7 @@ window.chapters = [
     },
     {
         "id": 11,
-        "title": "Chapter 11",
+        "title": "Chapter 11 Travel Health Insurance",
         "video": "videos/Chapter 11.mp4",
         "questions": [
             {
